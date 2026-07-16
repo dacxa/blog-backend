@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from pydantic import BaseModel
-
 from app.db.session import get_db
 from app.db.models import User
-from app.schemas.auth import EmailVerificationRequest, UserRegister, UserLogin, Token
+from app.schemas.auth import EmailVerificationRequest, UserCreate, UserRegister, UserLogin, Token
 from app.services import verification_service
 
 # 🎯 【精准修正】：这里将导入改为了你的 hash_password
@@ -18,10 +16,8 @@ router = APIRouter(prefix="/auth", tags=["认证"])
 # ==========================================
 # 🚀 专为【诺玛前端系统】定制的数据模型与直通接口
 # ==========================================
-class NormaRegisterRequest(BaseModel):
-    username: str
-    email: str
-    password: str
+class NormaRegisterRequest(UserCreate):
+    pass
 
 
 @router.post("/register", summary="纯净直达注册 (无邮件验证版-适配诺玛系统)")

@@ -2,9 +2,12 @@ from datetime import datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
+
+USERNAME_PATTERN = r"^[A-Za-z0-9_\-\u4e00-\u9fff]+$"
+
 # --- User Authentication Schemas ---
 class UserCreate(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$", description="用户名")
+    username: str = Field(..., min_length=2, max_length=50, pattern=USERNAME_PATTERN, description="用户名")
     email: EmailStr = Field(..., description="邮箱地址")
     password: str = Field(..., min_length=8, description="密码")
 
