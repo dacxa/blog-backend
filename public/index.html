@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>守夜人论坛 - 卡塞尔学院</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", "Cinzel", serif; }
+        body { background-color: #0d0d10; color: #dcdcdc; }
+
+        /* 学院顶部导航 */
+        .navbar {
+            background-color: #050508; border-bottom: 1px solid #332115;
+            padding: 0 40px; height: 70px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .navbar .logo {
+            font-size: 24px; font-weight: bold; color: #d4af37; text-decoration: none; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            letter-spacing: 2px;
+        }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
+        .nav-links span { color: #8b8b99; font-size: 14px; }
+        .nav-links span.blood-class { color: #d4af37; font-weight: bold; transition: color 0.3s; }
+
+        .logout-btn {
+            background: rgba(139, 0, 0, 0.2); color: #ff4d4f; border: 1px solid #8b0000; padding: 6px 18px;
+            border-radius: 2px; cursor: pointer; transition: 0.3s; font-size: 13px; letter-spacing: 1px;
+        }
+        .logout-btn:hover { background: #8b0000; color: #fff; box-shadow: 0 0 10px #8b0000; }
+
+        /* 管理员特权安保按钮样式 */
+        .admin-dashboard-btn {
+            background: rgba(212, 175, 55, 0.1); color: #d4af37; border: 1px solid #d4af37;
+            padding: 6px 18px; border-radius: 2px; cursor: pointer; transition: 0.3s; font-size: 13px; letter-spacing: 1px;
+        }
+        .admin-dashboard-btn:hover { background: #d4af37; color: #000; box-shadow: 0 0 10px #d4af37; }
+
+        /* 龙族史诗感横幅 */
+        .hero {
+            background: linear-gradient(to bottom, rgba(13,13,16,0.1), #0d0d10),
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000') center/cover;
+            color: #d4af37; text-align: center; padding: 100px 20px; margin-bottom: 40px; position: relative;
+        }
+        .hero::before {
+            content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); z-index: 1;
+        }
+        .hero-content { position: relative; z-index: 2; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+        .hero h1 { font-size: 42px; margin-bottom: 15px; letter-spacing: 5px; }
+        .hero p { font-size: 18px; color: #ccc; letter-spacing: 2px; font-style: italic; }
+
+        /* 帖子列表区域 */
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+        .section-title { font-size: 20px; color: #d4af37; margin-bottom: 30px; border-bottom: 1px solid #332115; padding-bottom: 10px; display: flex; align-items: center; gap: 10px;}
+
+        .post-card {
+            background: #141419; border: 1px solid #232328; border-radius: 4px; padding: 25px; margin-bottom: 20px;
+            transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .post-card::before {
+            content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: #5a0000; transition: 0.3s;
+        }
+        .post-card:hover { border-color: #d4af37; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .post-card:hover::before { background: #d4af37; }
+
+        .post-card h3 { color: #eaeaea; margin-bottom: 12px; font-size: 18px; }
+        .post-card .meta { font-size: 12px; color: #666; margin-bottom: 15px; }
+        .post-card p { color: #999; font-size: 14px; line-height: 1.7; }
+        .tag { display: inline-block; padding: 2px 8px; background: rgba(212,175,55,0.1); color: #d4af37; border-radius: 2px; font-size: 12px; margin-right: 10px;}
+        .tag-red { background: rgba(139,0,0,0.2); color: #ff4d4f; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="#" class="logo">守夜人论坛</a>
+        <div class="nav-links" id="nav-btn-group">
+            <span>EVA已连接... 欢迎您，<span class="blood-class" id="user-display">加载中...</span></span>
+            <button class="logout-btn" onclick="doLogout()">断开连接</button>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>凡王之血，必以剑终</h1>
+            <p>“你陪了我多少年，花开花落，一路上起起跌跌...”</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">◈ 冰海残卷 / 最新情报</h2>
+
+        <div class="post-card">
+            <h3><span class="tag tag-red">绝密</span> 青铜与火之王苏醒预警分析报告</h3>
+            <div class="meta">发布者：曼斯·龙德施泰特 | 发生地：长江三峡 | 权限：所有混血种</div>
+            <p>根据诺玛的最新地震波波形计算，长江流域产生的能量波动并非自然界地壳运动。执行部已派遣“摩尼亚赫”号前往该水域。本文包含初步的龙语声呐分析图谱和言灵探测记录，请各位学员保持戒备...</p>
+        </div>
+
+        <div class="post-card">
+            <h3><span class="tag">日常</span> 校园食堂的德国肘子又涨价了</h3>
+            <div class="meta">发布者：芬格尔 | 分类：守夜人灌水区 | 热度：🔥999+</div>
+            <p>太过分了！本周三的烤猪肘居然涨了2个美金。作为已经在学院留级了八年的老学长，我严厉谴责这种削减学生卡余额的恶劣行径！另外，有哪位好心的学弟学妹愿意借我50刀？月末必定双倍奉还！...</p>
+        </div>
+
+        <div class="post-card">
+            <h3><span class="tag">学术</span> 《言灵学概论》期末考试重点划定</h3>
+            <div class="meta">发布者：古德里安教授 | 分类：教务通知 | 权限：所有在校生</div>
+            <p>下周即将进行言灵学期末测验，重点考察“青铜大门”相关言灵的序列排序，以及“言灵·君焰”的物理热力学转换公式。严禁在考场区域内私自释放言灵，违者一律移交风纪委员会处理...</p>
+        </div>
+    </div>
+
+    <script>
+        // 门禁检查：EVA 身份核验 与 权限分流
+        const token = localStorage.getItem("blog_token");
+        const currentUser = localStorage.getItem("current_user");
+        const ADMIN_EMAIL = "2191737256@qq.com"; // 最高权限识别码
+
+        if (!token) {
+            alert("EVA无情提示：检测到未授权的信道介入。请先通过诺玛身份验证。");
+            window.location.href = "login.html";
+        } else {
+            // 前台UI身份动态渲染
+            const userDisplay = document.getElementById("user-display");
+
+            if (currentUser) {
+                if (currentUser === ADMIN_EMAIL) {
+                    // S级校长专属特效
+                    userDisplay.innerText = "昂热校长 (S级)";
+                    userDisplay.style.color = "#ff4d4f";
+                    userDisplay.style.textShadow = "0 0 10px rgba(255, 77, 79, 0.5)";
+
+                    // 动态注入去往后台的隐秘按键
+                    const navGroup = document.getElementById("nav-btn-group");
+                    const dashboardBtn = document.createElement("button");
+                    dashboardBtn.className = "admin-dashboard-btn";
+                    dashboardBtn.innerText = "进入校长室 (后台)";
+                    dashboardBtn.onclick = function() { window.location.href = "dashboard.html"; };
+
+                    // 插入到断开连接按钮的前面
+                    navGroup.insertBefore(dashboardBtn, navGroup.lastElementChild);
+                } else {
+                    // 普通专员 (截取@前面的字符显示)
+                    const nickName = currentUser.split('@')[0];
+                    userDisplay.innerText = `专员 [${nickName}]`;
+                }
+            }
+        }
+
+        // 登出逻辑
+        function doLogout() {
+            localStorage.removeItem("blog_token");
+            localStorage.removeItem("current_user");
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡塞尔学院 - 校长室控制台 (Dashboard)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif; }
+        body {
+            /* 完美适配背景图加载 */
+            background-image: url("16457995730865536.jpg");
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            background-attachment: fixed; height: 100vh; overflow: hidden;
+            color: #d1d1d1; background-color: #050505; display: flex;
+        }
+        .dark-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(5,5,5,0.85) 0%, rgba(20,5,5,0.95) 100%);
+            pointer-events: none; z-index: 1;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            position: absolute; top: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(15, 15, 18, 0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(139, 0, 0, 0.4);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; z-index: 10;
+        }
+        .navbar .brand { font-size: 18px; font-weight: bold; color: #fff; letter-spacing: 3px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+        .navbar .brand span { color: #8b0000; }
+        .logout-btn {
+            background: transparent; color: #aaa; border: 1px solid #555;
+            padding: 6px 15px; cursor: pointer; transition: all 0.3s; font-size: 12px; letter-spacing: 1px;
+        }
+        .logout-btn:hover { background: rgba(139, 0, 0, 0.2); color: #ff4d4d; border-color: #8b0000; }
+
+        .go-index-btn {
+            background: transparent; color: #d4af37; border: 1px solid #d4af37;
+            padding: 6px 15px; cursor: pointer; transition: all 0.3s; font-size: 12px; letter-spacing: 1px; margin-right: 15px;
+        }
+        .go-index-btn:hover { background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+
+        /* 主体内容区 */
+        .main-content {
+            position: relative; z-index: 5; margin-top: 80px; width: 100%; padding: 20px 40px;
+            display: grid; grid-template-columns: 300px 1fr; gap: 30px;
+            animation: fadeIn 1s ease-out forwards;
+        }
+        @keyframes fadeIn { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+
+        /* 侧边信息卡 */
+        .profile-card {
+            background: rgba(15, 15, 18, 0.6); backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 0, 0, 0.3); padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            height: fit-content; text-align: center; border-top: 3px solid #8b0000;
+        }
+        .avatar { width: 100px; height: 100px; border-radius: 50%; border: 2px solid #8b0000; margin: 0 auto 15px; background: #1a1a1a; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold; color: #ff4d4d; text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);}
+        .profile-card h3 { color: #fff; font-size: 22px; margin-bottom: 5px; letter-spacing: 2px; }
+        .profile-card p { color: #8b0000; font-size: 13px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; }
+        .info-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 10px; color: #888; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+        .info-row span.val { color: #ccc; }
+
+        /* 右侧任务看板 */
+        .dashboard-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel {
+            background: rgba(15, 15, 18, 0.6); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .panel:hover { transform: translateY(-5px); border-color: rgba(139, 0, 0, 0.5); }
+        .panel h4 { font-size: 14px; text-transform: uppercase; color: #8b0000; margin-bottom: 15px; letter-spacing: 2px; }
+        .panel .data-number { font-size: 40px; font-weight: bold; color: #fff; margin-bottom: 10px; }
+        .panel p { font-size: 12px; color: #666; line-height: 1.6; }
+        .panel-full { grid-column: span 2; }
+
+        .sys-log { background: #050505; border: 1px solid #222; padding: 15px; font-family: monospace; font-size: 12px; color: #00ff00; height: 150px; overflow-y: auto; margin-top: 15px; }
+        .sys-log p { color: #00ff00; margin-bottom: 5px; font-size: 11px; }
+        .sys-log p.alert { color: #ff4d4d; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="dark-overlay"></div>
+
+<!-- 顶部导航 -->
+<div class="navbar">
+    <div class="brand">Norma System <span>||</span> 校长室控制中心</div>
+    <div>
+        <button class="go-index-btn" onclick="window.location.href='index.html'">返回前台论坛</button>
+        <button class="logout-btn" onclick="doLogout()">断开连接 (Logout)</button>
+    </div>
+</div>
+
+<!-- 主体内容 -->
+<div class="main-content">
+
+    <!-- 左侧：专员档案 -->
+    <div class="profile-card">
+        <div class="avatar" id="avatarLetter">S</div>
+        <h3 id="displayUsername">正在解密...</h3>
+        <p>最高权限执行人</p>
+
+        <div class="info-row">
+            <span>血统评级</span> <span class="val" style="color: #ff4d4d; font-weight:bold;">S</span>
+        </div>
+        <div class="info-row">
+            <span>言灵状态</span> <span class="val" style="color: #d4af37;">时间零 (Time Zero)</span>
+        </div>
+        <div class="info-row">
+            <span>最后登入</span> <span class="val" id="loginTime">--</span>
+        </div>
+    </div>
+
+    <!-- 右侧：诺玛数据总线 -->
+    <div class="dashboard-panels">
+
+        <div class="panel">
+            <h4>待裁决事务 (Missions)</h4>
+            <div class="data-number">3</div>
+            <p>包含 1 个 SS 级龙族复苏侦测预警，请即刻向冰海执行部下达部署指令。</p>
+        </div>
+
+        <div class="panel">
+            <h4>装备库控制权 (Armory Control)</h4>
+            <div class="data-number">最高覆盖</div>
+            <p>您已取得装备部所有炼金武器库的直接开火授权，随时可发动“天谴”系统。</p>
+        </div>
+
+        <!-- 这是一个宽幅面板，模拟终端读取 -->
+        <div class="panel panel-full">
+            <h4>诺玛系统日志 (System Logs)</h4>
+            <p>实时监控卡塞尔学院核心数据总线...</p>
+            <div class="sys-log" id="sysLog">
+                <p>> [INFO] 正在初始化校长专属加密通道...</p>
+                <p>> [INFO] 指纹、虹膜及高阶DNA核对完毕，权限确立。</p>
+                <!-- 日志会在 JS 中动态追加 -->
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // ---------------------------------------------------------
+    // 1. 【安全大门】S级路由拦截守卫 (Role-Based Access Control)
+    // ---------------------------------------------------------
+    const token = localStorage.getItem("blog_token");
+    const currentUser = localStorage.getItem("current_user");
+    const ADMIN_EMAIL = "2191737256@qq.com"; // 关键控制凭证
+
+    if (!token) {
+        // 无Token直接踢回登录界面
+        alert("诺玛防火墙：未检测到言灵授权！正在反制...");
+        window.location.href = "login.html";
+    } else if (currentUser !== ADMIN_EMAIL) {
+        // 有Token，但是普通血统，企图通过地址栏强闯后台！
+        alert("守夜人警告：您的血统评级过低，强行读取该区域可能会导致精神崩溃。已强制遣返。");
+        window.location.href = "index.html";
+    } else {
+        // 校长本人驾到，放行并初始化数据
+        initDashboard();
+    }
+
+    // ---------------------------------------------------------
+    // 2. 初始化面板数据
+    // ---------------------------------------------------------
+    function initDashboard() {
+        // 记录登录时间
+        const now = new Date();
+        document.getElementById('loginTime').innerText = now.getHours() + ':' +
+            (now.getMinutes()<10?'0':'') + now.getMinutes();
+
+        // 既然已经过安检，直接渲染校长信息
+        setTimeout(() => {
+            document.getElementById('displayUsername').innerText = "昂热校长";
+            document.getElementById('avatarLetter').innerText = "昂";
+
+            appendLog("> [INFO] 档案读取完毕，校长室全息投影开启。");
+            appendLog("> [INFO] 欢迎回来，昂热先生。");
+            setTimeout(() => {
+                appendLog("> [WARNING] 【绝密预警】检测到日本海域神葬所出现剧烈胎动！请指示！", true);
+            }, 800);
+        }, 600);
+    }
+
+    // ---------------------------------------------------------
+    // 3. 动态打印日志效果
+    // ---------------------------------------------------------
+    function appendLog(msg, isAlert = false) {
+        const logBox = document.getElementById('sysLog');
+        const p = document.createElement('p');
+        p.innerText = msg;
+        if(isAlert) p.className = 'alert';
+        logBox.appendChild(p);
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    // ---------------------------------------------------------
+    // 4. 退出登录功能 (Logout)
+    // ---------------------------------------------------------
+    function doLogout() {
+        if(confirm("诺玛提示：确定要关闭控制台并休眠系统吗？")) {
+            localStorage.removeItem("blog_token");
+            localStorage.removeItem("current_user");
+            window.location.href = "login.html";
+        }
+    }
+</script>
+
+</body>
+</html>
