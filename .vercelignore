@@ -1,0 +1,11 @@
+.env
+.env.*
+deploy/
+.venv/
+__pycache__/
+mysql_data/
+.vercel/
+*.pem
+*.key
+*.p12
+*.pfx

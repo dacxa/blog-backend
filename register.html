@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡塞尔学院 - 档案录入(注册)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        body {
+            background-image: url("16457995730865536.jpg"); /* 同样使用那张背景图 */
+            background-size: cover; background-position: center; background-attachment: fixed;
+            height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #050505;
+        }
+        .dark-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(5,5,5,0.85) 0%, rgba(20,5,5,0.95) 100%); z-index: 1; pointer-events: none;
+        }
+        .register-card {
+            background: rgba(15, 15, 18, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 0, 0, 0.3); box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(139, 0, 0, 0.15);
+            padding: 40px 45px; width: 420px; position: relative; z-index: 10;
+        }
+        .register-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, #8b0000, transparent);
+        }
+        .register-card h2 { font-size: 18px; color: #fff; margin-bottom: 5px; letter-spacing: 3px; text-align: center; }
+        .register-card p.subtitle { font-size: 12px; color: #8b0000; margin-bottom: 25px; letter-spacing: 2px; text-align: center; font-weight: bold; }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 6px; letter-spacing: 1px; }
+        .form-group input { width: 100%; padding: 10px 12px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: #fff; font-size: 14px; outline: none; transition: border 0.3s; }
+        .form-group input:focus { border-color: #8b0000; background: rgba(15, 0, 0, 0.4); }
+
+        .code-row { display: flex; gap: 10px; }
+        .code-row input { flex: 1; }
+        .code-btn {
+            padding: 0 15px; background: #330000; border: 1px solid #8b0000; color: #ffcccc;
+            font-size: 12px; cursor: pointer; transition: 0.3s; width: 110px;
+        }
+        .code-btn:hover:not(:disabled) { background: #6a0000; color: #fff; }
+        .code-btn:disabled { background: #222; border-color: #444; color: #666; cursor: not-allowed; }
+
+        .submit-btn {
+            width: 100%; padding: 12px; background: #6a0000; color: #fff; border: 1px solid #8b0000;
+            font-size: 15px; font-weight: bold; letter-spacing: 3px; cursor: pointer; margin-top: 10px; transition: 0.3s;
+        }
+        .submit-btn:hover { background: #8b0000; box-shadow: 0 0 15px rgba(139,0,0,0.5); }
+
+        #message { margin-top: 15px; font-size: 12px; padding: 10px; display: none; text-align: center; }
+        .msg-error { background: rgba(139, 0, 0, 0.2); border: 1px solid #8b0000; color: #ff4d4d; display: block !important; }
+        .msg-success { background: rgba(0, 139, 69, 0.2); border: 1px solid #008b45; color: #4dff88; display: block !important; }
+
+        .footer-text { margin-top: 20px; font-size: 12px; color: #666; text-align: center; }
+        .footer-text a { color: #8b0000; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="dark-overlay"></div>
+
+<div class="register-card">
+    <h2>NEW ARCHIVE</h2>
+    <p class="subtitle">执行部新专员档案收录</p>
+
+    <!-- 1. 用户名 -->
+    <div class="form-group">
+        <label>血统编号 (Username)</label>
+        <input type="text" id="username" placeholder="如: 路明非 或 S-001">
+    </div>
+
+    <!-- 2. 邮箱 -->
+    <div class="form-group">
+        <label>联系终端 (Email)</label>
+        <input type="email" id="email" placeholder="输入真实邮箱接收密钥">
+    </div>
+
+    <!-- 3. 验证码 -->
+    <div class="form-group code-row">
+        <input type="text" id="code" placeholder="6位验证码">
+        <button id="sendCodeBtn" class="code-btn" onclick="sendCode()">获取密钥</button>
+    </div>
+
+    <!-- 4. 密码 -->
+    <div class="form-group">
+        <label>设定言灵 (Password)</label>
+        <input type="password" id="password" placeholder="设置档案密码">
+    </div>
+
+    <button id="regBtn" class="submit-btn" onclick="doRegister()">核准入档并注册</button>
+    <div id="message"></div>
+
+    <div class="footer-text">
+        已有档案？ <a href="login.html">返回诺玛直连</a>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "/api";
+
+    // 展现消息提示
+    function showMsg(text, isError) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.innerText = text;
+        msgDiv.className = isError ? "msg-error" : "msg-success";
+    }
+
+    // ================= 步骤1：发送验证码 =================
+    async function sendCode() {
+        const email = document.getElementById('email').value.trim();
+        if(!email) return showMsg("请输入用来接收邮件的邮箱", true);
+
+        const btn = document.getElementById('sendCodeBtn');
+        btn.disabled = true;
+        btn.innerText = "发送中...";
+
+        // 这里去请求你 Python 后端的验证码接口
+        try {
+            const res = await fetch(`${API_BASE}/auth/register/request-code`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ email: email })
+            });
+            const data = await res.json();
+
+            if(res.ok) {
+                showMsg("诺玛已下发密钥，请查看邮箱(含垃圾箱)", false);
+                let time = 60;
+                let timer = setInterval(() => {
+                    time--;
+                    btn.innerText = `${time}s 后重发`;
+                    if(time <= 0) {
+                        clearInterval(timer);
+                        btn.disabled = false;
+                        btn.innerText = "获取密钥";
+                    }
+                }, 1000);
+            } else {
+                showMsg(data.detail || "发送失败，邮箱格式错误或已注册", true);
+                btn.disabled = false;
+                btn.innerText = "获取密钥";
+            }
+        } catch(err) {
+            showMsg("未连接到 Python 后盾服务", true);
+            btn.disabled = false;
+            btn.innerText = "获取密钥";
+        }
+    }
+
+    // ================= 步骤2：提交全部信息注册 =================
+    async function doRegister() {
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const code = document.getElementById('code').value.trim();
+        const password = document.getElementById('password').value;
+
+        if(!username || !email || !code || !password) {
+            return showMsg("警报：四项信息均不能为空！", true);
+        }
+
+        const btn = document.getElementById('regBtn');
+        btn.disabled = true;
+        btn.innerText = "正在写入系统...";
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/register/verify-code`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    code: code,
+                    password: password
+                })
+            });
+
+            const data = await res.json();
+
+            if(res.ok) {
+                showMsg("档案已录入！即将跳转登录页面...", false);
+                setTimeout(() => { window.location.href = "login.html"; }, 2000);
+            } else {
+                showMsg(data.detail || "校验失败，验证码错误或信息已被使用", true);
+                btn.disabled = false;
+                btn.innerText = "核准入档并注册";
+            }
+        } catch(err) {
+            showMsg("服务器未响应，请检查 Python 是否运行", true);
+            btn.disabled = false;
+            btn.innerText = "核准入档并注册";
+        }
+    }
+</script>
+</body>
+</html>
