@@ -12,26 +12,39 @@ def request_code(email: str) -> None:
     """
     请求验证码（已移除 Redis，纯 MySQL 实现）
     """
-    code = generate_code()
-
-    # 获取设置中的过期秒数（默认 300 秒 = 5 分钟）
-    expire_seconds = getattr(settings, "VERIFICATION_EXPIRE_SECONDS", 300)
-    # 【完美解决】直接使用 timedelta 进行时间加法，彻底避开时间戳带来的时区错乱问题！
-    expire_dt = datetime.utcnow() + timedelta(seconds=expire_seconds)
+    now = datetime.utcnow()
+    expire_dt = now + timedelta(minutes=settings.VERIFICATION_CODE_EXPIRE_MINUTES)
 
     with SessionLocal() as db:
         # 查找这名用户的验证码记录（倒序查找最新的一条）
         existing = db.query(EmailVerification).filter(EmailVerification.email == email).order_by(
             EmailVerification.id.desc()).first()
 
+        if existing and existing.used_at is None:
+            resend_after = existing.created_at + timedelta(
+                seconds=settings.VERIFICATION_CODE_RESEND_SECONDS
+            )
+            if now < resend_after:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="Please wait before requesting another verification code.",
+                )
+
+        code = generate_code()
         if existing:
-            # 如果之前请求过，我们这里不去限制频率，而是直接覆盖旧验证码
             existing.code = code
             existing.expire_at = expire_dt
-            existing.used_at = None  # 重置使用状态
+            existing.created_at = now
+            existing.used_at = None
         else:
-            # 第一次请求验证码，新建记录
-            db.add(EmailVerification(email=email, code=code, expire_at=expire_dt))
+            db.add(
+                EmailVerification(
+                    email=email,
+                    code=code,
+                    expire_at=expire_dt,
+                    created_at=now,
+                )
+            )
 
         db.commit()
 

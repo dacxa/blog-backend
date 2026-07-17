@@ -35,7 +35,7 @@ def create_access_token(data: dict[str, Any], expires_delta: datetime.timedelta 
     """
     生成访问令牌 (JWT Token)
     """
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
 
     # 如果调用方传了明确的过期时间就用传的，否则用配置文件里的默认时间
     if expires_delta:

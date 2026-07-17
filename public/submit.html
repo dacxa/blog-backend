@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>投稿 - 守夜人论坛</title>
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+    <nav class="site-nav" aria-label="主导航">
+        <a class="brand" href="index.html">守夜人论坛</a>
+        <div class="nav-links">
+            <a href="my-posts.html">我的投稿</a>
+            <a href="index.html">返回论坛</a>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+        <h1 class="page-heading">提交投稿</h1>
+        <p class="page-intro">投稿提交后会进入审核队列，审核通过后公开显示。</p>
+        <p class="notice" id="submit-message" hidden aria-live="polite"></p>
+        <form class="form-panel" id="submit-form">
+            <div class="field">
+                <label for="title">标题</label>
+                <input id="title" name="title" maxlength="200" required>
+            </div>
+            <div class="field">
+                <label for="content">正文</label>
+                <textarea id="content" name="content" rows="12" required></textarea>
+            </div>
+            <div class="button-row">
+                <button class="button" id="submit-button" type="submit">提交审核</button>
+            </div>
+        </form>
+    </main>
+
+    <script src="js/api-errors.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        (function () {
+            "use strict";
+
+            var form = document.getElementById("submit-form");
+            var button = document.getElementById("submit-button");
+            var message = document.getElementById("submit-message");
+
+            function setMessage(text, type) {
+                message.textContent = text;
+                message.className = "notice notice-" + type;
+                message.hidden = !text;
+            }
+
+            function redirectToLoginIfUnauthorized(error) {
+                if (error.status === 401) {
+                    window.location.replace("login.html");
+                    return true;
+                }
+                return false;
+            }
+
+            async function initialize() {
+                try {
+                    var user = await blogApi.requireCurrentUser();
+                    if (!user) {
+                        form.hidden = true;
+                    }
+                } catch (error) {
+                    form.hidden = true;
+                    if (redirectToLoginIfUnauthorized(error)) {
+                        return;
+                    }
+                    setMessage(error.message, "error");
+                }
+            }
+
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                var title = document.getElementById("title").value.trim();
+                var content = document.getElementById("content").value.trim();
+                button.disabled = true;
+                setMessage("", "error");
+
+                try {
+                    await blogApi.createPost({ title: title, content: content });
+                    form.reset();
+                    setMessage("投稿已提交，当前状态为待审核。", "success");
+                } catch (error) {
+                    if (redirectToLoginIfUnauthorized(error)) {
+                        return;
+                    }
+                    setMessage(error.message, "error");
+                } finally {
+                    button.disabled = false;
+                }
+            });
+
+            initialize();
+        })();
+    </script>
+</body>
+</html>

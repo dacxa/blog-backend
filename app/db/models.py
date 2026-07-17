@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, ForeignKey,
-    Text, UniqueConstraint
+    Text, UniqueConstraint, Enum, Index
 )
 from sqlalchemy.orm import declarative_base, relationship
 
@@ -15,6 +15,24 @@ class User(Base):
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+    role = Column(
+        Enum(
+            "user",
+            "admin",
+            name="user_role",
+            native_enum=True,
+            create_constraint=True,
+        ),
+        nullable=False,
+        default="user",
+        server_default="user",
+    )
+    token_version = Column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default="0",
+    )
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
@@ -40,18 +58,39 @@ class Category(Base):
 
 class Post(Base):
     __tablename__ = "posts"
+    __table_args__ = (
+        Index("ix_posts_status_published_at", "status", "published_at"),
+    )
 
     id = Column(Integer, primary_key=True)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True, index=True)
+    reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
 
     title = Column(String(200), nullable=False)
     content = Column(Text, nullable=False)
+    status = Column(
+        Enum(
+            "pending",
+            "published",
+            "rejected",
+            name="post_status",
+            native_enum=True,
+            create_constraint=True,
+        ),
+        nullable=False,
+        default="pending",
+        server_default="pending",
+    )
+    reviewed_at = Column(DateTime, nullable=True)
+    review_note = Column(Text, nullable=True)
+    published_at = Column(DateTime, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    author = relationship("User")
+    author = relationship("User", foreign_keys=[author_id])
+    reviewer = relationship("User", foreign_keys=[reviewed_by_id])
     category = relationship("Category")
 
 

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -36,9 +36,21 @@ class EmailVerificationCheck(BaseModel):
     code: str = Field(..., min_length=6, max_length=6, description="验证码")
 
 # --- JWT Token Schemas ---
+class CurrentUserResponse(BaseModel):
+    id: int
+    username: str
+    role: Literal["user", "admin"]
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    role: Literal["user", "admin"]
+    user: CurrentUserResponse
 
 class TokenData(BaseModel):
     username: Optional[str] = None

@@ -2,8 +2,7 @@ import unittest
 
 from pydantic import ValidationError
 
-from app.routers.auth import NormaRegisterRequest
-from app.schemas.auth import UserRegister
+from app.schemas.auth import UserCreate, UserRegister
 
 
 class UserRegisterUsernameTests(unittest.TestCase):
@@ -41,8 +40,8 @@ class UserRegisterUsernameTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             self.make_payload("路" * 51)
 
-    def test_direct_registration_reuses_username_validation(self) -> None:
-        payload = NormaRegisterRequest(
+    def test_user_create_reuses_username_validation(self) -> None:
+        payload = UserCreate(
             username="路明非",
             email="user@example.com",
             password="secure-password",
@@ -51,7 +50,7 @@ class UserRegisterUsernameTests(unittest.TestCase):
         self.assertEqual(payload.username, "路明非")
 
         with self.assertRaises(ValidationError):
-            NormaRegisterRequest(
+            UserCreate(
                 username="路 明非",
                 email="user@example.com",
                 password="secure-password",

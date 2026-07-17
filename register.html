@@ -95,6 +95,7 @@
     </div>
 </div>
 
+<script src="public/js/api-errors.js"></script>
 <script>
     const API_BASE = "/api";
 
@@ -136,7 +137,7 @@
                     }
                 }, 1000);
             } else {
-                showMsg(data.detail || "发送失败，邮箱格式错误或已注册", true);
+                showMsg(formatApiError(data, "发送失败，邮箱格式错误或已注册"), true);
                 btn.disabled = false;
                 btn.innerText = "获取密钥";
             }
@@ -156,6 +157,12 @@
 
         if(!username || !email || !code || !password) {
             return showMsg("警报：四项信息均不能为空！", true);
+        }
+        if(username.length < 2 || username.length > 50 || !/^[\u4e00-\u9fffA-Za-z0-9_-]+$/.test(username)) {
+            return showMsg("用户名需为 2-50 位，仅可使用中文、英文、数字、下划线或短横线。", true);
+        }
+        if(password.length < 8) {
+            return showMsg("密码至少需要 8 位。", true);
         }
 
         const btn = document.getElementById('regBtn');
@@ -180,7 +187,7 @@
                 showMsg("档案已录入！即将跳转登录页面...", false);
                 setTimeout(() => { window.location.href = "login.html"; }, 2000);
             } else {
-                showMsg(data.detail || "校验失败，验证码错误或信息已被使用", true);
+                showMsg(formatApiError(data, "校验失败，验证码错误或信息已被使用"), true);
                 btn.disabled = false;
                 btn.innerText = "核准入档并注册";
             }

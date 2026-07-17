@@ -2,15 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
+from app.core.config import settings
 # 使用绝对路径导入你的项目模块
-from app.routers import auth
-from app.db.session import engine
-from app.db.models import Base
+from app.routers import admin, auth, posts
 
 # ==========================================
 # 1. 初始化数据库表结构
 # ==========================================
-Base.metadata.create_all(bind=engine)
 
 # ==========================================
 # 2. 创建 FastAPI 实例
@@ -22,16 +20,18 @@ app = FastAPI(title="My Blog API", description="我的个人网站后端接口",
 # ==========================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # ==========================================
 # 4. 挂载路由 (将其他模块的接口汇总到这里)
 # ==========================================
 app.include_router(auth.router)
+app.include_router(posts.router)
+app.include_router(admin.router)
 
 # ==========================================
 # 5. 基础接口

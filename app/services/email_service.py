@@ -1,4 +1,4 @@
-import random
+import secrets
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -8,8 +8,8 @@ from app.core.config import settings
 
 
 def generate_code() -> str:
-    """生成 6 位零补齐的数字验证码"""
-    return f"{random.randint(0, 999999):06d}"
+    """Generate a zero-padded six-digit verification code."""
+    return f"{secrets.randbelow(1_000_000):06d}"
 
 
 def send_verification_code(email: str, code: str) -> None:

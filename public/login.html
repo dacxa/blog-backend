@@ -1,195 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>卡塞尔学院 - 诺玛(Norma)登录系统</title>
-    <style>
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Helvetica Neue', Arial, 'Microsoft YaHei', sans-serif;
-        }
-
-        body {
-            background-image: url("16457995730865536.jpg");
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            background-attachment: fixed; height: 100vh; overflow: hidden;
-            display: flex; justify-content: center; align-items: center;
-            color: #d1d1d1; background-color: #050505;
-        }
-
-        .dark-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(5,5,5,0.7) 0%, rgba(20,5,5,0.85) 100%);
-            pointer-events: none; z-index: 1;
-        }
-
-        #rain-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; pointer-events: none; overflow: hidden;
-        }
-
-        .drop {
-            position: absolute;
-            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(220,220,220,0.3) 100%);
-            width: 1px; height: 100px; animation: rainFall linear infinite;
-        }
-
-        @keyframes rainFall { 0% { transform: translateY(-120px); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(110vh); opacity: 0; } }
-
-        .login-card {
-            background: rgba(15, 15, 18, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(139, 0, 0, 0.3); box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(139, 0, 0, 0.15);
-            padding: 45px 50px; width: 420px; position: relative; z-index: 10; animation: scanLine 2s ease-out forwards;
-        }
-
-        .login-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
-            background: linear-gradient(90deg, transparent, #8b0000, transparent);
-        }
-
-        @keyframes scanLine { 0% { opacity: 0; filter: contrast(2) brightness(2); transform: translateY(10px); } 100% { opacity: 1; filter: contrast(1) brightness(1); transform: translateY(0); } }
-
-        .cassell-logo {
-            width: 60px; height: 60px; margin: 0 auto 10px; display: block; filter: drop-shadow(0 0 5px rgba(255, 50, 50, 0.6));
-        }
-
-        .login-card h2 { font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 5px; letter-spacing: 4px; text-align: center; text-transform: uppercase; }
-        .login-card p.subtitle { font-size: 13px; color: #8b0000; margin-bottom: 35px; letter-spacing: 2px; text-align: center; font-weight: bold; text-shadow: 0 0 10px rgba(139,0,0,0.5); }
-
-        .form-group { margin-bottom: 25px; position: relative; }
-        .form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 8px; letter-spacing: 1.5px; text-transform: uppercase; }
-        .form-group input { width: 100%; padding: 12px 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid #333; color: #fff; font-size: 15px; transition: all 0.3s ease; outline: none; letter-spacing: 1px; }
-        .form-group input::placeholder { color: #444; font-size: 13px; }
-        .form-group input:focus { border-color: #8b0000; background: rgba(15, 0, 0, 0.4); box-shadow: inset 0 0 10px rgba(139, 0, 0, 0.2); }
-
-        .submit-btn {
-            width: 100%; padding: 14px; background: #6a0000; color: #fff; border: 1px solid #8b0000;
-            font-size: 16px; font-weight: bold; letter-spacing: 4px; cursor: pointer; transition: all 0.3s ease;
-            margin-top: 15px; text-transform: uppercase; position: relative; overflow: hidden;
-        }
-        .submit-btn:hover { background: #8b0000; box-shadow: 0 0 20px rgba(139, 0, 0, 0.5); }
-        .submit-btn:active { transform: scale(0.98); }
-        .submit-btn:disabled { background: #2a2a2a; border-color: #444; color: #777; cursor: not-allowed; box-shadow: none; }
-
-        #message { margin-top: 20px; font-size: 13px; padding: 12px; border: 1px solid transparent; display: none; text-align: center; letter-spacing: 1px; }
-        .msg-error { background: rgba(139, 0, 0, 0.2); border-color: #8b0000 !important; color: #ff4d4d; display: block !important; }
-        .msg-success { background: rgba(0, 139, 69, 0.2); border-color: #008b45 !important; color: #4dff88; display: block !important; }
-
-        .footer-text { margin-top: 30px; font-size: 12px; color: #666; text-align: center; letter-spacing: 1px; }
-        .footer-text a { color: #8b0000; text-decoration: none; transition: color 0.3s; }
-        .footer-text a:hover { color: #ff3333; }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 - 守夜人论坛</title>
+    <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body class="login-page">
+    <main class="login-panel">
+        <h1 class="page-heading">登录论坛</h1>
+        <p class="page-intro">使用你的账号继续访问社区。</p>
+        <p class="notice" id="login-message" hidden aria-live="polite"></p>
+        <form id="login-form">
+            <div class="field">
+                <label for="username">用户名</label>
+                <input id="username" name="username" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <label for="password">密码</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <div class="button-row">
+                <button class="button" id="login-button" type="submit">登录</button>
+                <a href="register.html">注册账号</a>
+            </div>
+        </form>
+    </main>
 
-<div class="dark-overlay"></div>
-<div id="rain-container"></div>
+    <script src="js/api-errors.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        (function () {
+            "use strict";
 
-<div class="login-card">
-    <svg class="cassell-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 5 L60 30 L85 30 L65 45 L75 75 L50 55 L25 75 L35 45 L15 30 L40 30 Z" fill="none" stroke="#8b0000" stroke-width="3"/>
-        <line x1="50" y1="5" x2="50" y2="95" stroke="#cc0000" stroke-width="2"/>
-        <circle cx="50" cy="50" r="45" fill="none" stroke="#330000" stroke-width="4"/>
-    </svg>
+            var form = document.getElementById("login-form");
+            var button = document.getElementById("login-button");
+            var message = document.getElementById("login-message");
 
-    <h2>Cassell College</h2>
-    <p class="subtitle">凡王之血，必以剑终</p>
-
-    <div class="form-group">
-        <label for="username">血统编号</label>
-        <input type="text" id="username" placeholder="请输入编号" autocomplete="off">
-    </div>
-
-    <div class="form-group">
-        <label for="password">言灵序列 (Password)</label>
-        <input type="password" id="password" placeholder="••••••••" onkeyup="checkEnter(event)">
-    </div>
-
-    <button id="loginBtn" class="submit-btn" onclick="doLogin()">连接诺玛 (NORMA)</button>
-    <div id="message"></div>
-
-    <div class="footer-text">
-        未录入基因图谱？ <a href="register.html">申请入学</a>
-    </div>
-</div>
-
-<script>
-    const API_BASE_URL = "/api";
-
-    function createRain() {
-        const container = document.getElementById('rain-container');
-        for(let i = 0; i < 60; i++) {
-            let drop = document.createElement('div');
-            drop.className = 'drop';
-            drop.style.left = Math.random() * 100 + 'vw';
-            drop.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
-            drop.style.animationDelay = (Math.random() * 5) + 's';
-            container.appendChild(drop);
-        }
-    }
-    createRain();
-
-    function checkEnter(event) { if (event.key === "Enter") doLogin(); }
-
-    async function doLogin() {
-        const accountInput = document.getElementById('username').value.trim();
-        const passwordInput = document.getElementById('password').value;
-        const msgDiv = document.getElementById('message');
-        const loginBtn = document.getElementById('loginBtn');
-
-        msgDiv.className = "";
-
-        if (!accountInput || !passwordInput) {
-            msgDiv.innerText = "诺玛提示：权限验证字段缺失。";
-            msgDiv.classList.add("msg-error"); return;
-        }
-
-        loginBtn.innerText = "正在核对 DNA 序列...";
-        loginBtn.disabled = true;
-
-        try {
-            // 前端发去的是字典，键名是 username，但值可能是用户名也可能是邮箱！
-            const requestData = { username: accountInput, password: passwordInput };
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
-
-            const data = await response.json();
-
-            // ================= 核心权限分发逻辑（已修复：后端完全主导） =================
-            if (response.ok) {
-                // 1. 存下由后端返回的动态门限：身份和 Token
-                localStorage.setItem("blog_token", data.access_token);
-                localStorage.setItem("current_user", accountInput);
-                const role = data.role || "user";
-                localStorage.setItem("user_role", role);
-
-                // 2. 根据数据库返还的真实身份(role)进行分流
-                if (role === "admin") {
-                    msgDiv.innerText = "S级权限确认。欢迎回来，校长。正在开启执行部专属通道...";
-                    setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
-                } else {
-                    msgDiv.innerText = "言灵档案解密。普通专员通道开启。正在接入守夜人论坛...";
-                    setTimeout(() => { window.location.href = "index.html"; }, 1500);
-                }
-                msgDiv.classList.add("msg-success");
-
-            } else {
-                msgDiv.innerText = "警告：血统驳回 " + (data.detail || "");
-                msgDiv.classList.add("msg-error");
-                loginBtn.innerText = "连接诺玛 (NORMA)";
-                loginBtn.disabled = false;
+            function setMessage(text, type) {
+                message.textContent = text;
+                message.className = "notice notice-" + type;
+                message.hidden = !text;
             }
-        } catch (error) {
-            msgDiv.innerText = "诺玛掉线：未能连接到卡塞尔主机";
-            msgDiv.classList.add("msg-error");
-            loginBtn.innerText = "连接诺玛 (NORMA)";
-            loginBtn.disabled = false;
-        }
-    }
-</script>
+
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                var username = document.getElementById("username").value.trim();
+                var password = document.getElementById("password").value;
+                button.disabled = true;
+                setMessage("", "error");
+
+                try {
+                    await blogApi.login({
+                        username: username,
+                        password: password
+                    });
+                    var user = await blogApi.getCurrentUser();
+                    window.location.href = user && user.role === "admin"
+                        ? "dashboard.html"
+                        : "index.html";
+                } catch (error) {
+                    setMessage(error.message, "error");
+                    button.disabled = false;
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

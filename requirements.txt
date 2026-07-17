@@ -1,9 +1,1 @@
-fastapi
-uvicorn[standard]
-pydantic-settings
-SQLAlchemy
-pymysql
-PyJWT
-passlib[bcrypt]
-email-validator
-python-multipart
+-r requirements.lock
