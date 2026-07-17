@@ -343,7 +343,21 @@ def test_requirements_lock_contains_exact_direct_runtime_and_test_dependencies()
         if line.strip() and not line.startswith("#")
     ]
 
-    assert (PROJECT_ROOT / "requirements.txt").read_text(encoding="utf-8").strip() == "-r requirements.lock"
+    assert [
+        line.strip()
+        for line in (PROJECT_ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    ] == [
+        "fastapi",
+        "uvicorn[standard]",
+        "pydantic-settings",
+        "SQLAlchemy",
+        "pymysql",
+        "PyJWT",
+        "passlib[bcrypt]",
+        "email-validator",
+        "python-multipart",
+    ]
     assert all(re.fullmatch(r"[A-Za-z0-9_.-]+(?:\[[A-Za-z0-9_,-]+\])?==[^=\s]+", line) for line in locked_lines)
     dependency_names = {
         line.split("==", 1)[0].split("[", 1)[0].lower().replace("_", "-")
