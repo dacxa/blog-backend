@@ -81,3 +81,21 @@ def test_vercel_proxies_api_requests_to_the_ecs_backend() -> None:
         "destination": "https://api.solocraft.xyz/:path*",
     } in configuration["rewrites"]
     assert "functions" not in configuration
+
+
+def test_vercel_build_excludes_the_python_backend() -> None:
+    ignored_paths = {
+        line.strip()
+        for line in (PROJECT_ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    }
+
+    assert {
+        "main.py",
+        "app/",
+        "alembic/",
+        "alembic.ini",
+        "requirements.txt",
+        "requirements.lock",
+        "**/*.py",
+    } <= ignored_paths

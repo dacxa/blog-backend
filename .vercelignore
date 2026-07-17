@@ -5,6 +5,15 @@ deploy/
 __pycache__/
 mysql_data/
 .vercel/
+main.py
+app/
+alembic/
+alembic.ini
+requirements.txt
+requirements.lock
+**/*.py
+scripts/
+tests/
 *.pem
 *.key
 *.p12
