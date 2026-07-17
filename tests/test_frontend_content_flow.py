@@ -46,17 +46,17 @@ def test_api_helper_covers_content_moderation_contract() -> None:
     ):
         assert endpoint in api
 
-    assert '"/api"' in api
+    assert '"https://api.solocraft.xyz"' in api
     assert "formatApiError" in api
     assert "window.blogApi" in api
 
 
-def test_api_helper_uses_same_origin_cookie_sessions_without_browser_token_storage() -> None:
+def test_api_helper_includes_cross_subdomain_cookie_sessions_without_browser_token_storage() -> None:
     api = read_public_file("js/api.js")
 
     assert "localStorage" not in api
     assert "Authorization" not in api
-    assert 'credentials: "same-origin"' in api
+    assert 'credentials: "include"' in api
     assert "error.status = response.status" in api
 
 

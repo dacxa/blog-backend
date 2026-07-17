@@ -1,7 +1,7 @@
 (function (global) {
     "use strict";
 
-    var API_BASE = "/api";
+    var API_BASE = "https://api.solocraft.xyz";
 
     function messageFor(payload, fallback) {
         if (typeof global.formatApiError === "function") {
@@ -23,7 +23,7 @@
         var requestOptions = {
             method: settings.method || "GET",
             headers: headers,
-            credentials: "same-origin"
+            credentials: "include"
         };
 
         if (settings.body !== undefined) {

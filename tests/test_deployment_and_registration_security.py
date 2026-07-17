@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 from pathlib import Path
+import re
 
 import pytest
 from fastapi import HTTPException
@@ -14,6 +15,39 @@ from app.services import verification_service
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_frontend_api_client_uses_api_subdomain_and_cross_site_credentials() -> None:
+    api_client = (PROJECT_ROOT / "public" / "js" / "api.js").read_text(
+        encoding="utf-8"
+    )
+
+    request_options = re.search(
+        r"var requestOptions\s*=\s*\{(.*?)\};", api_client, re.DOTALL
+    )
+
+    assert 'var API_BASE = "https://api.solocraft.xyz";' in api_client
+    assert request_options is not None
+    assert 'credentials: "include"' in request_options.group(1)
+    assert "global.fetch(API_BASE + path, requestOptions)" in api_client
+
+
+def test_registration_requests_use_api_subdomain_and_cross_site_credentials() -> None:
+    for registration_path in (
+        PROJECT_ROOT / "register.html",
+        PROJECT_ROOT / "public" / "register.html",
+    ):
+        registration_page = registration_path.read_text(encoding="utf-8")
+
+        assert 'const API_BASE = "https://api.solocraft.xyz";' in registration_page
+        for endpoint in ("request-code", "verify-code"):
+            request = re.search(
+                rf"fetch\(`\$\{{API_BASE\}}/auth/register/{endpoint}`,\s*\{{(.*?)\}}\s*\);",
+                registration_page,
+                re.DOTALL,
+            )
+            assert request is not None
+            assert 'credentials: "include"' in request.group(1)
 
 
 @pytest.fixture()
@@ -72,15 +106,8 @@ def test_verification_codes_use_a_cryptographic_random_source(monkeypatch) -> No
     assert calls == [1_000_000]
 
 
-def test_vercel_proxies_api_requests_to_the_ecs_backend() -> None:
-    configuration = json.loads((PROJECT_ROOT / "vercel.json").read_text(encoding="utf-8"))
-
-    assert "redirects" not in configuration
-    assert {
-        "source": "/api/:path*",
-        "destination": "https://api.solocraft.xyz/:path*",
-    } in configuration["rewrites"]
-    assert "functions" not in configuration
+def test_vercel_does_not_proxy_api_requests_to_the_ecs_backend() -> None:
+    assert not (PROJECT_ROOT / "vercel.json").exists()
 
 
 def test_vercel_build_excludes_the_python_backend() -> None:

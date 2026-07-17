@@ -97,7 +97,7 @@
 
 <script src="public/js/api-errors.js"></script>
 <script>
-    const API_BASE = "/api";
+    const API_BASE = "https://api.solocraft.xyz";
 
     // 展现消息提示
     function showMsg(text, isError) {
@@ -120,6 +120,7 @@
             const res = await fetch(`${API_BASE}/auth/register/request-code`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
+                credentials: "include",
                 body: JSON.stringify({ email: email })
             });
             const data = await res.json();
@@ -173,6 +174,7 @@
             const res = await fetch(`${API_BASE}/auth/register/verify-code`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
+                credentials: "include",
                 body: JSON.stringify({
                     username: username,
                     email: email,
